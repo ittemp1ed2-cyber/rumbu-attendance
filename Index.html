@@ -600,14 +600,14 @@ function submitForm() {
   const staff    = roster[unit][shift];
 
   const rows = staff.map(s => ({
-    date:     date,
-    unit:     unit,
-    shift:    shift,
-    recorder: recorder,
-    code:     s.code,
-    name:     s.name,
-    role:     s.role,
-    status:   stateMap[s.code] === true ? 'Present' : 'Absent',
+    date:      date,
+    unit:      unit,
+    shift:     shift,
+    recorder:  recorder,
+    code:      s.code,
+    name:      s.name,
+    role:      s.role,
+    status:    stateMap[s.code] === true ? 'Present' : 'Absent',
     timestamp: new Date().toISOString()
   }));
 
@@ -615,38 +615,35 @@ function submitForm() {
   btn.disabled = true;
   btn.textContent = 'Submitting…';
 
-  fetch(SHEET_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rows })
-  })
-  .then(() => {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = SHEET_URL;
+  form.target = 'hidden-iframe';
+
+  const input = document.createElement('input');
+  input.type  = 'hidden';
+  input.name  = 'rows';
+  input.value = JSON.stringify(rows);
+  form.appendChild(input);
+
+  const iframe = document.createElement('iframe');
+  iframe.name  = 'hidden-iframe';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  document.body.appendChild(form);
+
+  iframe.onload = function() {
     showToast('Attendance submitted successfully.', 'success');
     btn.textContent = 'Submitted ✓';
     setTimeout(() => {
       btn.disabled = false;
       btn.textContent = 'Submit attendance';
     }, 3000);
-  })
-  .catch(() => {
-    showToast('Submission failed. Check your connection and try again.', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Submit attendance';
-  });
-}
+    form.remove();
+    iframe.remove();
+  };
 
-function showToast(msg, type) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
+  form.submit();
 }
-
-updateList();
-</script>
 </body>
 </html>
