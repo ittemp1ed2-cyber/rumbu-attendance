@@ -6,7 +6,6 @@
 <title>Mat Extruder — Shift Attendance</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --purple: #7B2FBE;
     --purple-dark: #4B0082;
@@ -25,200 +24,46 @@
     --radius: 10px;
     --shadow: 0 1px 4px rgba(0,0,0,0.08);
   }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--grey-bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 90px;
-  }
-
-  /* TOP BAR */
-  .topbar {
-    background: var(--purple-dark);
-    padding: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .topbar-org {
-    font-size: 11px;
-    color: rgba(255,255,255,0.6);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-  }
-  .topbar-title {
-    font-size: 17px;
-    font-weight: 600;
-    color: #fff;
-  }
-
-  /* FORM CONTROLS */
-  .controls {
-    background: var(--white);
-    border-bottom: 1px solid var(--grey-border);
-    padding: 12px 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--grey-bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+  .topbar { background: var(--purple-dark); padding: 16px; position: sticky; top: 0; z-index: 10; }
+  .topbar-org { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+  .topbar-title { font-size: 17px; font-weight: 600; color: #fff; }
+  .controls { background: var(--white); border-bottom: 1px solid var(--grey-border); padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
   .ctrl-group.full { grid-column: 1 / -1; }
-  .ctrl-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--grey-text);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .ctrl-group select, .ctrl-group input {
-    border: 1px solid var(--grey-border);
-    border-radius: 8px;
-    padding: 9px 10px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    background: var(--grey-bg);
-    width: 100%;
-    outline: none;
-    -webkit-appearance: none;
-  }
-  .ctrl-group select:focus, .ctrl-group input:focus {
-    border-color: var(--purple);
-  }
-
-  /* SUMMARY BAR */
-  .summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 12px 16px;
-    background: var(--white);
-    border-bottom: 1px solid var(--grey-border);
-  }
-  .stat {
-    text-align: center;
-    padding: 8px 4px;
-    border-radius: var(--radius);
-    background: var(--grey-bg);
-  }
-  .stat-num {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .stat-lbl {
-    font-size: 11px;
-    color: var(--grey-text);
-    margin-top: 3px;
-  }
+  .ctrl-label { font-size: 11px; font-weight: 500; color: var(--grey-text); text-transform: uppercase; letter-spacing: 0.04em; }
+  .ctrl-group select, .ctrl-group input { border: 1px solid var(--grey-border); border-radius: 8px; padding: 9px 10px; font-size: 14px; font-weight: 500; color: var(--text); background: var(--grey-bg); width: 100%; outline: none; -webkit-appearance: none; }
+  .ctrl-group select:focus, .ctrl-group input:focus { border-color: var(--purple); }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 16px; background: var(--white); border-bottom: 1px solid var(--grey-border); }
+  .stat { text-align: center; padding: 8px 4px; border-radius: var(--radius); background: var(--grey-bg); }
+  .stat-num { font-size: 24px; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: 11px; color: var(--grey-text); margin-top: 3px; }
   .stat.present .stat-num { color: var(--green); }
   .stat.absent .stat-num  { color: var(--red); }
   .stat.total .stat-num   { color: var(--purple-dark); }
-
-  /* MARK ALL ROW */
-  .mark-all-row {
-    display: flex;
-    gap: 8px;
-    padding: 10px 16px 4px;
-  }
-  .mark-all-btn {
-    flex: 1;
-    padding: 9px;
-    border-radius: 8px;
-    border: 1px solid var(--grey-border);
-    background: var(--white);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .mark-all-row { display: flex; gap: 8px; padding: 10px 16px 4px; }
+  .mark-all-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--grey-border); background: var(--white); font-size: 13px; font-weight: 500; cursor: pointer; }
   .mark-all-btn.all-present { color: var(--green); border-color: var(--green-border); }
   .mark-all-btn.all-absent  { color: var(--red);   border-color: var(--red-border); }
   .mark-all-btn:active { opacity: 0.7; }
-
-  /* SECTION HEADER */
-  .section-header {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--grey-text);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 14px 16px 6px;
-  }
-
-  /* STAFF LIST */
+  .section-header { font-size: 11px; font-weight: 600; color: var(--grey-text); text-transform: uppercase; letter-spacing: 0.05em; padding: 14px 16px 6px; }
   .staff-list { padding: 0 16px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
-
-  .staff-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 12px;
-    border-radius: var(--radius);
-    border: 1px solid var(--grey-border);
-    background: var(--white);
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: var(--shadow);
-  }
-  .staff-card.present {
-    background: var(--green-light);
-    border-color: var(--green-border);
-  }
-  .staff-card.absent {
-    background: var(--red-light);
-    border-color: var(--red-border);
-  }
-
-  .avatar {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-    flex-shrink: 0;
-    background: var(--purple-light);
-    color: var(--purple-dark);
-    border: 1px solid rgba(75,0,130,0.15);
-  }
+  .staff-card { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: var(--radius); border: 1px solid var(--grey-border); background: var(--white); cursor: pointer; transition: border-color 0.12s, background 0.12s; -webkit-tap-highlight-color: transparent; box-shadow: var(--shadow); }
+  .staff-card.present { background: var(--green-light); border-color: var(--green-border); }
+  .staff-card.absent  { background: var(--red-light);   border-color: var(--red-border); }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; background: var(--purple-light); color: var(--purple-dark); border: 1px solid rgba(75,0,130,0.15); }
   .staff-card.present .avatar { background: var(--green); color: #fff; border-color: transparent; }
   .staff-card.absent  .avatar { background: var(--red);   color: #fff; border-color: transparent; }
-
   .staff-info { flex: 1; min-width: 0; }
-  .staff-name {
-    font-size: 14px; font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    color: var(--text);
-  }
-  .staff-meta {
-    font-size: 11px; color: var(--grey-text); margin-top: 1px;
-    display: flex; gap: 6px; align-items: center;
-  }
-  .role-badge {
-    font-size: 10px; font-weight: 600; padding: 1px 6px;
-    border-radius: 20px; letter-spacing: 0.02em;
-    background: var(--purple-light); color: var(--purple-dark);
-  }
-  .role-badge.mixer   { background: #FFF3E0; color: #E65100; }
+  .staff-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .staff-meta { font-size: 11px; color: var(--grey-text); margin-top: 1px; display: flex; gap: 6px; align-items: center; }
+  .role-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 20px; background: var(--purple-light); color: var(--purple-dark); }
+  .role-badge.mixer     { background: #FFF3E0; color: #E65100; }
   .role-badge.inspector { background: #E3F2FD; color: #0D47A1; }
-  .role-badge.leader  { background: #F3E5F5; color: #4A148C; }
-
-  /* TOGGLE PILL */
+  .role-badge.leader    { background: #F3E5F5; color: #4A148C; }
   .toggle-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-  .toggle {
-    width: 50px; height: 28px; border-radius: 14px;
-    background: #D0D0D0; border: none; position: relative;
-    transition: background 0.15s; cursor: pointer; flex-shrink: 0;
-  }
-  .toggle::after {
-    content: ''; position: absolute;
-    width: 22px; height: 22px; border-radius: 50%;
-    background: #fff; top: 3px; left: 3px;
-    transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
+  .toggle { width: 50px; height: 28px; border-radius: 14px; background: #D0D0D0; border: none; position: relative; transition: background 0.15s; cursor: pointer; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
   .staff-card.present .toggle { background: var(--green); }
   .staff-card.present .toggle::after { transform: translateX(22px); }
   .staff-card.absent  .toggle { background: var(--red); }
@@ -226,62 +71,24 @@
   .toggle-label { font-size: 10px; font-weight: 600; color: var(--grey-text); }
   .staff-card.present .toggle-label { color: var(--green); }
   .staff-card.absent  .toggle-label { color: var(--red); }
-
-  /* SUBMIT BAR */
-  .submit-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    padding: 12px 16px;
-    background: var(--white);
-    border-top: 1px solid var(--grey-border);
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
-  }
-  .submit-btn {
-    width: 100%; padding: 14px;
-    border-radius: var(--radius);
-    background: var(--purple);
-    color: #fff; border: none;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.15s;
-  }
+  .submit-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 16px; background: var(--white); border-top: 1px solid var(--grey-border); box-shadow: 0 -2px 10px rgba(0,0,0,0.08); }
+  .submit-btn { width: 100%; padding: 14px; border-radius: var(--radius); background: var(--purple); color: #fff; border: none; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
   .submit-btn:active { background: var(--purple-dark); }
   .submit-btn:disabled { background: #B0B0B0; cursor: not-allowed; }
-
-  /* TOAST */
-  .toast {
-    position: fixed; top: 80px; left: 16px; right: 16px;
-    padding: 14px 16px; border-radius: var(--radius);
-    font-size: 14px; font-weight: 500;
-    z-index: 100; text-align: center;
-    animation: slideIn 0.2s ease;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
+  .toast { position: fixed; top: 80px; left: 16px; right: 16px; padding: 14px 16px; border-radius: var(--radius); font-size: 14px; font-weight: 500; z-index: 100; text-align: center; animation: slideIn 0.2s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
   .toast.success { background: var(--green); color: #fff; }
   .toast.error   { background: var(--red);   color: #fff; }
   .toast.warning { background: #E65100;      color: #fff; }
   @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-
-  /* OVERLAY */
-  .overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5); z-index: 50;
-    align-items: center; justify-content: center; padding: 24px;
-  }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; padding: 24px; }
   .overlay.active { display: flex; }
-  .dialog {
-    background: var(--white); border-radius: 16px;
-    padding: 24px; width: 100%; max-width: 340px;
-  }
-  .dialog h3 { font-size: 17px; margin-bottom: 8px; color: var(--text); }
-  .dialog p  { font-size: 14px; color: var(--grey-text); line-height: 1.5; margin-bottom: 20px; }
+  .dialog { background: var(--white); border-radius: 16px; padding: 24px; width: 100%; max-width: 340px; }
+  .dialog h3 { font-size: 17px; margin-bottom: 8px; }
+  .dialog p  { font-size: 14px; color: var(--grey-text); line-height: 1.5; margin-bottom: 20px; white-space: pre-line; }
   .dialog-btns { display: flex; gap: 10px; }
-  .dialog-btns button {
-    flex: 1; padding: 12px; border-radius: 8px; border: none;
-    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
-  }
-  .btn-cancel { background: var(--grey-bg); color: var(--text); }
-  .btn-confirm { background: var(--purple); color: #fff; }
+  .dialog-btns button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-cancel  { background: var(--grey-bg); color: var(--text); }
+  .btn-confirm { background: var(--purple);  color: #fff; }
 </style>
 </head>
 <body>
@@ -352,107 +159,104 @@
     <h3 id="dialog-title">Submit attendance?</h3>
     <p id="dialog-body"></p>
     <div class="dialog-btns">
-      <button class="btn-cancel" onclick="closeDialog()">Cancel</button>
-      <button class="btn-confirm" onclick="submitForm()">Submit</button>
+      <button class="btn-cancel" id="btn-cancel" onclick="closeDialog()">Cancel</button>
+      <button class="btn-confirm" id="btn-confirm">Submit</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── REPLACE THIS URL after deploying your Google Apps Script ──────────────────
 const SHEET_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
-// ─────────────────────────────────────────────────────────────────────────────
 
 const roster = {
   EXT1: {
     Morning: [
-      {name:'Auwal H. Sulaiman',    code:'V658',  role:'Shift Leader'},
-      {name:'Musa Adam',            code:'RA233', role:'Mixer'},
-      {name:'Yusuf Yakubu',         code:'RB158', role:'Mixer'},
-      {name:'Alanana Silas',        code:'X139',  role:'Inspector'},
-      {name:'Haruna N. Jogana',     code:'V991',  role:'Inspector'},
-      {name:'Abdulwahab Mustapha',  code:'RT140', role:'Inspector'},
-      {name:'Anas R. Adam',         code:'Y333',  role:'Inspector'},
-      {name:'Salihu Muhammad',      code:'J168',  role:'Operator'},
-      {name:'Mansur G. Muhammad',   code:'X196',  role:'Operator'},
-      {name:'Shaharani Said',       code:'Y111',  role:'Operator'},
-      {name:'Dennis Harrison',      code:'V676',  role:'Operator'},
-      {name:'Abdulaziz Muhammad',   code:'X315',  role:'Operator'},
-      {name:'Ibrahim Muhammad',     code:'RD389', role:'Operator'},
-      {name:'James Ogar',           code:'X175',  role:'Operator'},
-      {name:'Kamalu Abubakar',      code:'RA463', role:'Operator'},
-      {name:"Ya'u Isiyaku",         code:'RA721', role:'Operator'},
-      {name:'Thormos A. Duniya',    code:'RB055', role:'Operator'},
-      {name:'Yunusa Said',          code:'RA351', role:'Operator'},
-      {name:'Sunusi B. Adam',       code:'RA354', role:'Operator'},
+      {name:'Auwal H. Sulaiman',   code:'V658',  role:'Shift Leader'},
+      {name:'Musa Adam',           code:'RA233', role:'Mixer'},
+      {name:'Yusuf Yakubu',        code:'RB158', role:'Mixer'},
+      {name:'Alanana Silas',       code:'X139',  role:'Inspector'},
+      {name:'Haruna N. Jogana',    code:'V991',  role:'Inspector'},
+      {name:'Abdulwahab Mustapha', code:'RT140', role:'Inspector'},
+      {name:'Anas R. Adam',        code:'Y333',  role:'Inspector'},
+      {name:'Salihu Muhammad',     code:'J168',  role:'Operator'},
+      {name:'Mansur G. Muhammad',  code:'X196',  role:'Operator'},
+      {name:'Shaharani Said',      code:'Y111',  role:'Operator'},
+      {name:'Dennis Harrison',     code:'V676',  role:'Operator'},
+      {name:'Abdulaziz Muhammad',  code:'X315',  role:'Operator'},
+      {name:'Ibrahim Muhammad',    code:'RD389', role:'Operator'},
+      {name:'James Ogar',          code:'X175',  role:'Operator'},
+      {name:'Kamalu Abubakar',     code:'RA463', role:'Operator'},
+      {name:"Ya'u Isiyaku",        code:'RA721', role:'Operator'},
+      {name:'Thormos A. Duniya',   code:'RB055', role:'Operator'},
+      {name:'Yunusa Said',         code:'RA351', role:'Operator'},
+      {name:'Sunusi B. Adam',      code:'RA354', role:'Operator'},
     ],
     Night: [
-      {name:'Yahaya Ayegba',        code:'V667',  role:'Shift Leader'},
-      {name:'Kabiru M. Yusuf',      code:'J214',  role:'Operator'},
-      {name:'Abubakar H. Adam',     code:'Z566',  role:'Operator'},
-      {name:'IKyaa Christopher',    code:'X396',  role:'Operator'},
-      {name:'Gambo Ijai',           code:'X113',  role:'Operator'},
-      {name:'Safullahi Saleh',      code:'Y481',  role:'Operator'},
-      {name:'Ismail U. Santuraki',  code:'RA339', role:'Operator'},
-      {name:'Samaila Nshinemeng',   code:'RA507', role:'Operator'},
-      {name:'Abdussamad Muhammad',  code:'RD024', role:'Operator'},
-      {name:'Kabiru Saad',          code:'RC085', role:'Operator'},
-      {name:'Abubakar Ibrahim',     code:'RC340', role:'Operator'},
-      {name:'Haruna Yusuf',         code:'RC484', role:'Operator'},
-      {name:'Sulaiman Ismail',      code:'RD244', role:'Operator'},
-      {name:'Haruna Umar',          code:'RD252', role:'Operator'},
-      {name:'Nuhu Abdullahi',       code:'RD237', role:'Operator'},
+      {name:'Yahaya Ayegba',       code:'V667',  role:'Shift Leader'},
+      {name:'Kabiru M. Yusuf',     code:'J214',  role:'Operator'},
+      {name:'Abubakar H. Adam',    code:'Z566',  role:'Operator'},
+      {name:'IKyaa Christopher',   code:'X396',  role:'Operator'},
+      {name:'Gambo Ijai',          code:'X113',  role:'Operator'},
+      {name:'Safullahi Saleh',     code:'Y481',  role:'Operator'},
+      {name:'Ismail U. Santuraki', code:'RA339', role:'Operator'},
+      {name:'Samaila Nshinemeng',  code:'RA507', role:'Operator'},
+      {name:'Abdussamad Muhammad', code:'RD024', role:'Operator'},
+      {name:'Kabiru Saad',         code:'RC085', role:'Operator'},
+      {name:'Abubakar Ibrahim',    code:'RC340', role:'Operator'},
+      {name:'Haruna Yusuf',        code:'RC484', role:'Operator'},
+      {name:'Sulaiman Ismail',     code:'RD244', role:'Operator'},
+      {name:'Haruna Umar',         code:'RD252', role:'Operator'},
+      {name:'Nuhu Abdullahi',      code:'RD237', role:'Operator'},
     ]
   },
   EXT2: {
     Morning: [
-      {name:'Andrews P. Ali',       code:'V204',  role:'Shift Leader'},
-      {name:'Farouk Umar',          code:'RA409', role:'Mixer'},
-      {name:'Kwandi Wilson',        code:'RC050', role:'Mixer'},
-      {name:'Naziru Isah',          code:'X190',  role:'Inspector'},
-      {name:'Obadiah Barnabas',     code:'V192',  role:'Inspector'},
-      {name:'Abdulaziz Idris',      code:'Y918',  role:'Inspector'},
-      {name:'Abubakar Shaibu',      code:'R45',   role:'Inspector'},
-      {name:'Daniel Danjuma',       code:'J122',  role:'Operator'},
-      {name:'Samuel Bartoo',        code:'V386',  role:'Operator'},
-      {name:'Zekari Akeh',          code:'Z626',  role:'Operator'},
-      {name:'Kazeem Abdulrasheed',  code:'Y992',  role:'Operator'},
-      {name:'Elisha Nehemiah',      code:'RB153', role:'Operator'},
-      {name:'Salisu Yuguda',        code:'X121',  role:'Operator'},
-      {name:'Kabiru Musa',          code:'RT146', role:'Operator'},
-      {name:'Dauda Adamu',          code:'RA534', role:'Operator'},
-      {name:'Auwalu Amadu',         code:'X770',  role:'Operator'},
-      {name:'Abdulhamid Hussain',   code:'RA799', role:'Operator'},
-      {name:'Diskudo Tukur',        code:'RA235', role:'Operator'},
-      {name:'Hassan Musa',          code:'RB203', role:'Operator'},
-      {name:'Bashir Hassan',        code:'X236',  role:'Operator'},
+      {name:'Andrews P. Ali',      code:'V204',  role:'Shift Leader'},
+      {name:'Farouk Umar',         code:'RA409', role:'Mixer'},
+      {name:'Kwandi Wilson',       code:'RC050', role:'Mixer'},
+      {name:'Naziru Isah',         code:'X190',  role:'Inspector'},
+      {name:'Obadiah Barnabas',    code:'V192',  role:'Inspector'},
+      {name:'Abdulaziz Idris',     code:'Y918',  role:'Inspector'},
+      {name:'Abubakar Shaibu',     code:'R45',   role:'Inspector'},
+      {name:'Daniel Danjuma',      code:'J122',  role:'Operator'},
+      {name:'Samuel Bartoo',       code:'V386',  role:'Operator'},
+      {name:'Zekari Akeh',         code:'Z626',  role:'Operator'},
+      {name:'Kazeem Abdulrasheed', code:'Y992',  role:'Operator'},
+      {name:'Elisha Nehemiah',     code:'RB153', role:'Operator'},
+      {name:'Salisu Yuguda',       code:'X121',  role:'Operator'},
+      {name:'Kabiru Musa',         code:'RT146', role:'Operator'},
+      {name:'Dauda Adamu',         code:'RA534', role:'Operator'},
+      {name:'Auwalu Amadu',        code:'X770',  role:'Operator'},
+      {name:'Abdulhamid Hussain',  code:'RA799', role:'Operator'},
+      {name:'Diskudo Tukur',       code:'RA235', role:'Operator'},
+      {name:'Hassan Musa',         code:'RB203', role:'Operator'},
+      {name:'Bashir Hassan',       code:'X236',  role:'Operator'},
     ],
     Night: [
-      {name:'Daniel Inuwa',         code:'—',     role:'Shift Leader'},
-      {name:'Shaibu Abdullahi',     code:'RC214', role:'Mixer'},
-      {name:'Abubakar Ahmad',       code:'RD349', role:'Mixer'},
-      {name:'John Landas',          code:'X293',  role:'Inspector'},
-      {name:'Yakubu Yahaya',        code:'RA555', role:'Inspector'},
-      {name:'Daniel Lawan',         code:'RT117', role:'Operator'},
-      {name:'Shaibu Bala',          code:'J105',  role:'Operator'},
-      {name:'Hosa Garba',           code:'J213',  role:'Operator'},
-      {name:'Benard Eimoga',        code:'V380',  role:'Operator'},
-      {name:'Abraham Shiekuma',     code:'RT027', role:'Operator'},
-      {name:'Anthony Philip',       code:'X569',  role:'Operator'},
-      {name:'Suleman Hamza',        code:'RB042', role:'Operator'},
-      {name:'Rabiu Garba',          code:'Z382',  role:'Operator'},
-      {name:'West Shehu',           code:'RA334', role:'Operator'},
-      {name:'Saminu Abdullahi',     code:'RB054', role:'Operator'},
-      {name:'Nura Muazu',           code:'RB084', role:'Operator'},
-      {name:'Yusuf Bom',            code:'RA109', role:'Operator'},
-      {name:'Obadiah Ishaku',       code:'RA101', role:'Operator'},
+      {name:'Daniel Inuwa',        code:'—',     role:'Shift Leader'},
+      {name:'Shaibu Abdullahi',    code:'RC214', role:'Mixer'},
+      {name:'Abubakar Ahmad',      code:'RD349', role:'Mixer'},
+      {name:'John Landas',         code:'X293',  role:'Inspector'},
+      {name:'Yakubu Yahaya',       code:'RA555', role:'Inspector'},
+      {name:'Daniel Lawan',        code:'RT117', role:'Operator'},
+      {name:'Shaibu Bala',         code:'J105',  role:'Operator'},
+      {name:'Hosa Garba',          code:'J213',  role:'Operator'},
+      {name:'Benard Eimoga',       code:'V380',  role:'Operator'},
+      {name:'Abraham Shiekuma',    code:'RT027', role:'Operator'},
+      {name:'Anthony Philip',      code:'X569',  role:'Operator'},
+      {name:'Suleman Hamza',       code:'RB042', role:'Operator'},
+      {name:'Rabiu Garba',         code:'Z382',  role:'Operator'},
+      {name:'West Shehu',          code:'RA334', role:'Operator'},
+      {name:'Saminu Abdullahi',    code:'RB054', role:'Operator'},
+      {name:'Nura Muazu',          code:'RB084', role:'Operator'},
+      {name:'Yusuf Bom',           code:'RA109', role:'Operator'},
+      {name:'Obadiah Ishaku',      code:'RA101', role:'Operator'},
     ]
   }
 };
 
 let state = {};
 
-// Set today's date as default
 const today = new Date();
 document.getElementById('date-sel').value = today.toISOString().split('T')[0];
 
@@ -476,7 +280,6 @@ function updateList() {
   const shift = document.getElementById('shift-sel').value;
   const key   = getKey();
   const staff = roster[unit][shift];
-
   if (!state[key]) {
     state[key] = {};
     staff.forEach(s => { state[key][s.code] = null; });
@@ -487,8 +290,7 @@ function updateList() {
 
 function toggle(code) {
   const key = getKey();
-  const cur = state[key][code];
-  state[key][code] = (cur === true) ? false : true;
+  state[key][code] = (state[key][code] === true) ? false : true;
   const unit  = document.getElementById('unit-sel').value;
   const shift = document.getElementById('shift-sel').value;
   renderList(roster[unit][shift], state[key]);
@@ -511,7 +313,6 @@ function renderList(staff, stateMap) {
     if (!groups[s.role]) groups[s.role] = [];
     groups[s.role].push(s);
   });
-
   let html = '';
   order.forEach(role => {
     if (!groups[role]) return;
@@ -544,43 +345,39 @@ function renderList(staff, stateMap) {
 
 function updateStats(stateMap) {
   const vals    = Object.values(stateMap);
-  const total   = vals.length;
-  const present = vals.filter(v => v === true).length;
-  const absent  = vals.filter(v => v === false).length;
-  document.getElementById('s-total').textContent   = total;
-  document.getElementById('s-present').textContent = present;
-  document.getElementById('s-absent').textContent  = absent;
+  document.getElementById('s-total').textContent   = vals.length;
+  document.getElementById('s-present').textContent = vals.filter(v => v === true).length;
+  document.getElementById('s-absent').textContent  = vals.filter(v => v === false).length;
 }
 
 function confirmSubmit() {
-  const key    = getKey();
+  const key      = getKey();
   const stateMap = state[key];
-  const vals   = Object.values(stateMap);
+  const vals     = Object.values(stateMap);
   const unmarked = vals.filter(v => v === null).length;
   const present  = vals.filter(v => v === true).length;
   const absent   = vals.filter(v => v === false).length;
-  const unit   = document.getElementById('unit-sel').value;
-  const shift  = document.getElementById('shift-sel').value;
-  const date   = document.getElementById('date-sel').value;
+  const unit     = document.getElementById('unit-sel').value;
+  const shift    = document.getElementById('shift-sel').value;
+  const date     = document.getElementById('date-sel').value;
 
-  if (!date) {
-    showToast('Please select a date before submitting.', 'warning');
-    return;
-  }
+  if (!date) { showToast('Please select a date before submitting.', 'warning'); return; }
+
+  const cancelBtn  = document.getElementById('btn-cancel');
+  const confirmBtn = document.getElementById('btn-confirm');
+
   if (unmarked > 0) {
     document.getElementById('dialog-title').textContent = `${unmarked} staff not marked`;
-    document.getElementById('dialog-body').textContent =
-      `${unmarked} staff members have not been marked. Please mark all staff before submitting.`;
-    document.querySelector('.btn-confirm').onclick = closeDialog;
-    document.querySelector('.btn-confirm').textContent = 'Go back';
-    document.querySelector('.btn-cancel').style.display = 'none';
+    document.getElementById('dialog-body').textContent  = `${unmarked} staff members have not been marked yet.\n\nPlease mark all staff before submitting.`;
+    confirmBtn.textContent = 'Go back';
+    confirmBtn.onclick     = closeDialog;
+    cancelBtn.style.display = 'none';
   } else {
     document.getElementById('dialog-title').textContent = 'Submit attendance?';
-    document.getElementById('dialog-body').textContent =
-      `${unit} ${shift} shift — ${date}\n${present} present, ${absent} absent.\n\nThis will be sent to Google Sheets.`;
-    document.querySelector('.btn-confirm').onclick = submitForm;
-    document.querySelector('.btn-confirm').textContent = 'Submit';
-    document.querySelector('.btn-cancel').style.display = '';
+    document.getElementById('dialog-body').textContent  = `${unit} ${shift} shift — ${date}\n${present} present, ${absent} absent.\n\nThis will be sent to Google Sheets.`;
+    confirmBtn.textContent = 'Submit';
+    confirmBtn.onclick     = submitForm;
+    cancelBtn.style.display = '';
   }
   document.getElementById('overlay').classList.add('active');
 }
@@ -612,38 +409,50 @@ function submitForm() {
   }));
 
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = 'Submitting…';
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = SHEET_URL;
-  form.target = 'hidden-iframe';
-
-  const input = document.createElement('input');
-  input.type  = 'hidden';
-  input.name  = 'rows';
-  input.value = JSON.stringify(rows);
-  form.appendChild(input);
 
   const iframe = document.createElement('iframe');
   iframe.name  = 'hidden-iframe';
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
+
+  const form   = document.createElement('form');
+  form.method  = 'POST';
+  form.action  = SHEET_URL;
+  form.target  = 'hidden-iframe';
+
+  const input  = document.createElement('input');
+  input.type   = 'hidden';
+  input.name   = 'rows';
+  input.value  = JSON.stringify(rows);
+  form.appendChild(input);
   document.body.appendChild(form);
 
   iframe.onload = function() {
     showToast('Attendance submitted successfully.', 'success');
     btn.textContent = 'Submitted ✓';
     setTimeout(() => {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Submit attendance';
     }, 3000);
-    form.remove();
-    iframe.remove();
+    setTimeout(() => { form.remove(); iframe.remove(); }, 1000);
   };
 
   form.submit();
 }
+
+function showToast(msg, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className   = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+updateList();
+</script>
 </body>
 </html>
