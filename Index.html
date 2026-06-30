@@ -5,155 +5,343 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Mat Extruder — Shift Attendance</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --purple: #7B2FBE;
-    --purple-dark: #4B0082;
-    --purple-light: #EDE7F6;
-    --green: #1B8A4C;
-    --green-light: #E6F4EC;
-    --green-border: #A8D5B8;
-    --red: #C0392B;
-    --red-light: #FDECEA;
-    --red-border: #F1A9A0;
-    --grey-bg: #F5F5F5;
-    --grey-border: #DDDDDD;
-    --grey-text: #888888;
-    --text: #1A1A1A;
-    --white: #FFFFFF;
-    --radius: 10px;
-    --shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--grey-bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
-  .topbar { background: var(--purple-dark); padding: 16px; position: sticky; top: 0; z-index: 10; }
-  .topbar-org { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
-  .topbar-title { font-size: 17px; font-weight: 600; color: #fff; }
-  .controls { background: var(--white); border-bottom: 1px solid var(--grey-border); padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
-  .ctrl-group.full { grid-column: 1 / -1; }
-  .ctrl-label { font-size: 11px; font-weight: 500; color: var(--grey-text); text-transform: uppercase; letter-spacing: 0.04em; }
-  .ctrl-group select, .ctrl-group input { border: 1px solid var(--grey-border); border-radius: 8px; padding: 9px 10px; font-size: 14px; font-weight: 500; color: var(--text); background: var(--grey-bg); width: 100%; outline: none; -webkit-appearance: none; }
-  .ctrl-group select:focus, .ctrl-group input:focus { border-color: var(--purple); }
-  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 16px; background: var(--white); border-bottom: 1px solid var(--grey-border); }
-  .stat { text-align: center; padding: 8px 4px; border-radius: var(--radius); background: var(--grey-bg); }
-  .stat-num { font-size: 24px; font-weight: 700; line-height: 1; }
-  .stat-lbl { font-size: 11px; color: var(--grey-text); margin-top: 3px; }
-  .stat.present .stat-num { color: var(--green); }
-  .stat.absent .stat-num  { color: var(--red); }
-  .stat.total .stat-num   { color: var(--purple-dark); }
-  .mark-all-row { display: flex; gap: 8px; padding: 10px 16px 4px; }
-  .mark-all-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--grey-border); background: var(--white); font-size: 13px; font-weight: 500; cursor: pointer; }
-  .mark-all-btn.all-present { color: var(--green); border-color: var(--green-border); }
-  .mark-all-btn.all-absent  { color: var(--red);   border-color: var(--red-border); }
-  .mark-all-btn:active { opacity: 0.7; }
-  .section-header { font-size: 11px; font-weight: 600; color: var(--grey-text); text-transform: uppercase; letter-spacing: 0.05em; padding: 14px 16px 6px; }
-  .staff-list { padding: 0 16px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
-  .staff-card { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: var(--radius); border: 1px solid var(--grey-border); background: var(--white); cursor: pointer; transition: border-color 0.12s, background 0.12s; -webkit-tap-highlight-color: transparent; box-shadow: var(--shadow); }
-  .staff-card.present { background: var(--green-light); border-color: var(--green-border); }
-  .staff-card.absent  { background: var(--red-light);   border-color: var(--red-border); }
-  .avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; background: var(--purple-light); color: var(--purple-dark); border: 1px solid rgba(75,0,130,0.15); }
-  .staff-card.present .avatar { background: var(--green); color: #fff; border-color: transparent; }
-  .staff-card.absent  .avatar { background: var(--red);   color: #fff; border-color: transparent; }
-  .staff-info { flex: 1; min-width: 0; }
-  .staff-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
-  .staff-meta { font-size: 11px; color: var(--grey-text); margin-top: 1px; display: flex; gap: 6px; align-items: center; }
-  .role-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 20px; background: var(--purple-light); color: var(--purple-dark); }
-  .role-badge.mixer     { background: #FFF3E0; color: #E65100; }
-  .role-badge.inspector { background: #E3F2FD; color: #0D47A1; }
-  .role-badge.leader    { background: #F3E5F5; color: #4A148C; }
-  .toggle-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-  .toggle { width: 50px; height: 28px; border-radius: 14px; background: #D0D0D0; border: none; position: relative; transition: background 0.15s; cursor: pointer; flex-shrink: 0; }
-  .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-  .staff-card.present .toggle { background: var(--green); }
-  .staff-card.present .toggle::after { transform: translateX(22px); }
-  .staff-card.absent  .toggle { background: var(--red); }
-  .staff-card.absent  .toggle::after { transform: translateX(22px); }
-  .toggle-label { font-size: 10px; font-weight: 600; color: var(--grey-text); }
-  .staff-card.present .toggle-label { color: var(--green); }
-  .staff-card.absent  .toggle-label { color: var(--red); }
-  .submit-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 16px; background: var(--white); border-top: 1px solid var(--grey-border); box-shadow: 0 -2px 10px rgba(0,0,0,0.08); }
-  .submit-btn { width: 100%; padding: 14px; border-radius: var(--radius); background: var(--purple); color: #fff; border: none; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
-  .submit-btn:active { background: var(--purple-dark); }
-  .submit-btn:disabled { background: #B0B0B0; cursor: not-allowed; }
-  .toast { position: fixed; top: 80px; left: 16px; right: 16px; padding: 14px 16px; border-radius: var(--radius); font-size: 14px; font-weight: 500; z-index: 100; text-align: center; animation: slideIn 0.2s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-  .toast.success { background: var(--green); color: #fff; }
-  .toast.error   { background: var(--red);   color: #fff; }
-  .toast.warning { background: #E65100;      color: #fff; }
-  @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; padding: 24px; }
-  .overlay.active { display: flex; }
-  .dialog { background: var(--white); border-radius: 16px; padding: 24px; width: 100%; max-width: 340px; }
-  .dialog h3 { font-size: 17px; margin-bottom: 8px; }
-  .dialog p  { font-size: 14px; color: var(--grey-text); line-height: 1.5; margin-bottom: 20px; white-space: pre-line; }
-  .dialog-btns { display: flex; gap: 10px; }
-  .dialog-btns button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .btn-cancel  { background: var(--grey-bg); color: var(--text); }
-  .btn-confirm { background: var(--purple);  color: #fff; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#7B2FBE;--purple-dark:#4B0082;--purple-light:#EDE7F6;
+  --green:#1B8A4C;--green-light:#E6F4EC;--green-border:#A8D5B8;
+  --red:#C0392B;--red-light:#FDECEA;--red-border:#F1A9A0;
+  --grey-bg:#F5F5F5;--grey-border:#DDDDDD;--grey-text:#888888;
+  --text:#1A1A1A;--white:#FFFFFF;--radius:10px;
+  --shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--grey-bg);color:var(--text);min-height:100vh;padding-bottom:110px}
+/* TOP BAR */
+.topbar{background:var(--purple-dark);padding:14px 16px;position:sticky;top:0;z-index:20}
+.topbar-org{font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.topbar-row{display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:17px;font-weight:600;color:#fff}
+.topbar-btns{display:flex;gap:8px}
+.icon-btn{background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:#fff;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.icon-btn:active{opacity:0.7}
+/* TABS */
+.tabs{display:flex;background:var(--white);border-bottom:1px solid var(--grey-border)}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:13px;font-weight:600;color:var(--grey-text);border-bottom:3px solid transparent;cursor:pointer;transition:color .15s,border-color .15s}
+.tab.active{color:var(--purple-dark);border-bottom-color:var(--purple)}
+/* CONTROLS */
+.controls{background:var(--white);border-bottom:1px solid var(--grey-border);padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ctrl-group{display:flex;flex-direction:column;gap:4px}
+.ctrl-label{font-size:11px;font-weight:500;color:var(--grey-text);text-transform:uppercase;letter-spacing:.04em}
+.ctrl-group select,.ctrl-group input{border:1px solid var(--grey-border);border-radius:8px;padding:9px 10px;font-size:14px;font-weight:500;color:var(--text);background:var(--grey-bg);width:100%;outline:none;-webkit-appearance:none}
+.ctrl-group select:focus,.ctrl-group input:focus{border-color:var(--purple)}
+/* SUMMARY */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--grey-border)}
+.stat{text-align:center;padding:8px 4px;border-radius:var(--radius);background:var(--grey-bg)}
+.stat-num{font-size:24px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:var(--grey-text);margin-top:3px}
+.stat.present .stat-num{color:var(--green)}
+.stat.absent .stat-num{color:var(--red)}
+.stat.total .stat-num{color:var(--purple-dark)}
+/* MARK ALL */
+.mark-all-row{display:flex;gap:8px;padding:10px 16px 4px}
+.mark-all-btn{flex:1;padding:9px;border-radius:8px;border:1px solid var(--grey-border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer}
+.mark-all-btn.all-present{color:var(--green);border-color:var(--green-border)}
+.mark-all-btn.all-absent{color:var(--red);border-color:var(--red-border)}
+.mark-all-btn:active{opacity:.7}
+/* SECTION */
+.section-header{font-size:11px;font-weight:600;color:var(--grey-text);text-transform:uppercase;letter-spacing:.05em;padding:14px 16px 6px}
+.staff-list{padding:0 16px;display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+/* STAFF CARD */
+.staff-card{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--radius);border:1px solid var(--grey-border);background:var(--white);cursor:pointer;transition:border-color .12s,background .12s;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+.staff-card.present{background:var(--green-light);border-color:var(--green-border)}
+.staff-card.absent{background:var(--red-light);border-color:var(--red-border)}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;background:var(--purple-light);color:var(--purple-dark);border:1px solid rgba(75,0,130,.15)}
+.staff-card.present .avatar{background:var(--green);color:#fff;border-color:transparent}
+.staff-card.absent .avatar{background:var(--red);color:#fff;border-color:transparent}
+.staff-info{flex:1;min-width:0}
+.staff-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.staff-meta{font-size:11px;color:var(--grey-text);margin-top:1px;display:flex;gap:6px;align-items:center}
+.role-badge{font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;background:var(--purple-light);color:var(--purple-dark)}
+.role-badge.mixer{background:#FFF3E0;color:#E65100}
+.role-badge.inspector{background:#E3F2FD;color:#0D47A1}
+.role-badge.leader{background:#F3E5F5;color:#4A148C}
+.toggle-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.toggle{width:50px;height:28px;border-radius:14px;background:#D0D0D0;border:none;position:relative;transition:background .15s;cursor:pointer;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.staff-card.present .toggle{background:var(--green)}
+.staff-card.present .toggle::after{transform:translateX(22px)}
+.staff-card.absent .toggle{background:var(--red)}
+.staff-card.absent .toggle::after{transform:translateX(22px)}
+.toggle-label{font-size:10px;font-weight:600;color:var(--grey-text)}
+.staff-card.present .toggle-label{color:var(--green)}
+.staff-card.absent .toggle-label{color:var(--red)}
+/* SUBMIT BAR */
+.submit-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--white);border-top:1px solid var(--grey-border);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.submit-btn{width:100%;padding:14px;border-radius:var(--radius);background:var(--purple);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.submit-btn:active{background:var(--purple-dark)}
+.submit-btn:disabled{background:#B0B0B0;cursor:not-allowed}
+/* TOAST */
+.toast{position:fixed;top:80px;left:16px;right:16px;padding:14px 16px;border-radius:var(--radius);font-size:14px;font-weight:500;z-index:200;text-align:center;animation:slideIn .2s ease;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+.toast.warning{background:#E65100;color:#fff}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+/* OVERLAY / DIALOG */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:24px}
+.overlay.active{display:flex}
+.dialog{background:var(--white);border-radius:16px;padding:24px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto}
+.dialog h3{font-size:17px;margin-bottom:8px}
+.dialog p{font-size:14px;color:var(--grey-text);line-height:1.5;margin-bottom:16px;white-space:pre-line}
+.dialog-btns{display:flex;gap:10px;margin-top:16px}
+.dialog-btns button{flex:1;padding:12px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-cancel{background:var(--grey-bg);color:var(--text)}
+.btn-confirm{background:var(--purple);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+/* FORM FIELDS in dialog */
+.field-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field-label{font-size:12px;font-weight:600;color:var(--grey-text);text-transform:uppercase;letter-spacing:.04em}
+.field-input{border:1px solid var(--grey-border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);background:var(--grey-bg);width:100%;outline:none;font-family:inherit}
+.field-input:focus{border-color:var(--purple)}
+/* PRINT PANEL */
+.print-panel{padding:16px;display:none}
+.print-panel.active{display:block}
+.print-controls{background:var(--white);border-radius:var(--radius);border:1px solid var(--grey-border);padding:16px;margin-bottom:12px}
+.print-controls h3{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--purple-dark)}
+.print-btn{width:100%;padding:13px;border-radius:var(--radius);background:var(--purple-dark);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px}
+.print-btn:active{opacity:.8}
+/* STAFF MGMT PANEL */
+.mgmt-panel{padding:16px;display:none}
+.mgmt-panel.active{display:block}
+.mgmt-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--grey-border);padding:16px;margin-bottom:12px}
+.mgmt-card h3{font-size:15px;font-weight:600;color:var(--purple-dark);margin-bottom:4px}
+.mgmt-card p{font-size:13px;color:var(--grey-text);margin-bottom:14px}
+.mgmt-btn{width:100%;padding:12px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.mgmt-btn.purple{background:var(--purple);color:#fff}
+.mgmt-btn.red{background:var(--red);color:#fff}
+.mgmt-btn:active{opacity:.8}
+/* STAFF LIST for mgmt */
+.mgmt-staff-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.mgmt-staff-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--grey-border);background:var(--white)}
+.mgmt-staff-info{flex:1;min-width:0}
+.mgmt-staff-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mgmt-staff-sub{font-size:11px;color:var(--grey-text)}
+.remove-btn{background:var(--red-light);color:var(--red);border:1px solid var(--red-border);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+/* PIN SCREEN */
+.pin-screen{padding:24px 16px;text-align:center;display:none}
+.pin-screen.active{display:block}
+.pin-screen h3{font-size:18px;font-weight:600;color:var(--purple-dark);margin-bottom:8px}
+.pin-screen p{font-size:14px;color:var(--grey-text);margin-bottom:24px}
+.pin-input{width:140px;text-align:center;font-size:24px;font-weight:700;letter-spacing:8px;border:2px solid var(--grey-border);border-radius:12px;padding:14px;background:var(--white);color:var(--text);outline:none;font-family:inherit}
+.pin-input:focus{border-color:var(--purple)}
+.pin-submit{margin-top:16px;padding:13px 40px;border-radius:var(--radius);background:var(--purple);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* PRINT STYLES */
+@media print{
+  body{padding:0;background:#fff}
+  .topbar,.tabs,.controls,.summary,.mark-all-row,.submit-bar,.print-panel,.mgmt-panel,.pin-screen,.toast{display:none!important}
+  .print-content{display:block!important}
+  #staff-section{display:none}
+  .staff-card{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+}
+.print-content{display:none}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-org">Rumbu Industries Group</div>
-  <div class="topbar-title">Mat Extruder — Shift Attendance</div>
-</div>
-
-<div class="controls">
-  <div class="ctrl-group">
-    <span class="ctrl-label">Unit</span>
-    <select id="unit-sel" onchange="updateList()">
-      <option value="EXT1">EXT1</option>
-      <option value="EXT2">EXT2</option>
-    </select>
-  </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">Shift</span>
-    <select id="shift-sel" onchange="updateList()">
-      <option value="Morning">Morning (07:00–19:00)</option>
-      <option value="Night">Night (19:00–07:00)</option>
-    </select>
-  </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">Date</span>
-    <input type="date" id="date-sel">
-  </div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">Recorded by</span>
-    <select id="recorder-sel">
-      <option value="Auwal H. Sulaiman">Auwal H. Sulaiman (EXT1-A)</option>
-      <option value="Yahaya Ayegba">Yahaya Ayegba (EXT1-B)</option>
-      <option value="Andrews P. Ali">Andrews P. Ali (EXT2-A)</option>
-      <option value="Daniel Inuwa">Daniel Inuwa (EXT2-B)</option>
-    </select>
+  <div class="topbar-row">
+    <div class="topbar-title">Mat Extruder — Attendance</div>
+    <div class="topbar-btns">
+      <button class="icon-btn" onclick="showTab('print')">🖨 Report</button>
+      <button class="icon-btn" onclick="showMgmt()">⚙ Staff</button>
+    </div>
   </div>
 </div>
 
-<div class="summary">
-  <div class="stat total">
-    <div class="stat-num" id="s-total">0</div>
-    <div class="stat-lbl">Total</div>
+<div class="tabs">
+  <div class="tab active" id="tab-attend" onclick="showTab('attend')">Attendance</div>
+  <div class="tab" id="tab-print" onclick="showTab('print')">Print / Report</div>
+  <div class="tab" id="tab-mgmt" onclick="showMgmt()">Staff Mgmt</div>
+</div>
+
+<!-- ── ATTENDANCE TAB ─────────────────────────────────────────── -->
+<div id="panel-attend">
+  <div class="controls">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Unit</span>
+      <select id="unit-sel" onchange="updateList()">
+        <option value="EXT1">EXT1</option>
+        <option value="EXT2">EXT2</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Shift</span>
+      <select id="shift-sel" onchange="updateList()">
+        <option value="A">Shift A</option>
+        <option value="B">Shift B</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Time</span>
+      <select id="time-sel" onchange="updateList()">
+        <option value="Morning">Morning (07:00–19:00)</option>
+        <option value="Night">Night (19:00–07:00)</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Date</span>
+      <input type="date" id="date-sel">
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Recorded by</span>
+      <select id="recorder-sel">
+        <option value="Auwal H. Sulaiman">Auwal H. Sulaiman (EXT1-A)</option>
+        <option value="Yahaya Ayegba">Yahaya Ayegba (EXT1-B)</option>
+        <option value="Andrews P. Ali">Andrews P. Ali (EXT2-A)</option>
+        <option value="Daniel Inuwa">Daniel Inuwa (EXT2-B)</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">&nbsp;</span>
+      <div style="font-size:12px;color:var(--grey-text);padding:10px 0" id="combo-label">EXT1 · Shift A · Morning</div>
+    </div>
   </div>
-  <div class="stat present">
-    <div class="stat-num" id="s-present">0</div>
-    <div class="stat-lbl">Present</div>
+
+  <div class="summary">
+    <div class="stat total"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Total</div></div>
+    <div class="stat present"><div class="stat-num" id="s-present">0</div><div class="stat-lbl">Present</div></div>
+    <div class="stat absent"><div class="stat-num" id="s-absent">0</div><div class="stat-lbl">Absent</div></div>
   </div>
-  <div class="stat absent">
-    <div class="stat-num" id="s-absent">0</div>
-    <div class="stat-lbl">Absent</div>
+
+  <div class="mark-all-row">
+    <button class="mark-all-btn all-present" onclick="markAll(true)">✓ Mark all present</button>
+    <button class="mark-all-btn all-absent" onclick="markAll(false)">✗ Mark all absent</button>
+  </div>
+
+  <div id="staff-section"></div>
+</div>
+
+<!-- ── PRINT / REPORT TAB ─────────────────────────────────────── -->
+<div class="print-panel" id="panel-print">
+  <div class="print-controls">
+    <h3>Generate attendance report</h3>
+    <div class="ctrl-group" style="margin-bottom:10px">
+      <span class="ctrl-label">Date</span>
+      <input type="date" id="print-date">
+    </div>
+    <div class="ctrl-group" style="margin-bottom:10px">
+      <span class="ctrl-label">Unit</span>
+      <select id="print-unit">
+        <option value="ALL">All units</option>
+        <option value="EXT1">EXT1 only</option>
+        <option value="EXT2">EXT2 only</option>
+      </select>
+    </div>
+    <div class="ctrl-group" style="margin-bottom:10px">
+      <span class="ctrl-label">Shift</span>
+      <select id="print-shift">
+        <option value="ALL">All shifts</option>
+        <option value="A">Shift A only</option>
+        <option value="B">Shift B only</option>
+      </select>
+    </div>
+    <div class="ctrl-group" style="margin-bottom:10px">
+      <span class="ctrl-label">Time</span>
+      <select id="print-time">
+        <option value="ALL">Morning and Night</option>
+        <option value="Morning">Morning only</option>
+        <option value="Night">Night only</option>
+      </select>
+    </div>
+    <button class="print-btn" onclick="generateReport()">Generate and print report</button>
   </div>
 </div>
 
-<div class="mark-all-row">
-  <button class="mark-all-btn all-present" onclick="markAll(true)">✓ Mark all present</button>
-  <button class="mark-all-btn all-absent"  onclick="markAll(false)">✗ Mark all absent</button>
+<!-- ── STAFF MGMT TAB ─────────────────────────────────────────── -->
+<div class="mgmt-panel" id="panel-mgmt">
+  <div class="pin-screen active" id="pin-screen">
+    <h3>Unit Head Access</h3>
+    <p>Enter your PIN to manage staff roster</p>
+    <input class="pin-input" type="password" id="pin-input" maxlength="4" placeholder="••••" inputmode="numeric">
+    <br>
+    <button class="pin-submit" onclick="checkPin()">Unlock</button>
+  </div>
+  <div id="mgmt-content" style="display:none">
+    <div class="mgmt-card">
+      <h3>Add new staff</h3>
+      <p>Staff added here will appear on their assigned shift roster immediately.</p>
+      <div class="field-group">
+        <span class="field-label">Full name</span>
+        <input class="field-input" id="new-name" type="text" placeholder="e.g. Musa Aliyu">
+      </div>
+      <div class="field-group">
+        <span class="field-label">Staff code</span>
+        <input class="field-input" id="new-code" type="text" placeholder="e.g. RC999">
+      </div>
+      <div class="field-group">
+        <span class="field-label">Role</span>
+        <select class="field-input" id="new-role">
+          <option value="Operator">Operator</option>
+          <option value="Mixer">Mixer</option>
+          <option value="Inspector">Inspector</option>
+          <option value="Shift Leader">Shift Leader</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Unit</span>
+        <select class="field-input" id="new-unit">
+          <option value="EXT1">EXT1</option>
+          <option value="EXT2">EXT2</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Shift</span>
+        <select class="field-input" id="new-shift">
+          <option value="A">Shift A</option>
+          <option value="B">Shift B</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Time</span>
+        <select class="field-input" id="new-time">
+          <option value="Morning">Morning</option>
+          <option value="Night">Night</option>
+        </select>
+      </div>
+      <button class="mgmt-btn purple" onclick="addStaff()">Add to roster</button>
+    </div>
+
+    <div class="mgmt-card">
+      <h3>Transfer out / remove staff</h3>
+      <p>Select a unit and shift to see the roster, then tap Remove next to the staff member who has left the department.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <select class="field-input" id="mgmt-unit" onchange="renderMgmtList()" style="font-size:13px;padding:8px">
+          <option value="EXT1">EXT1</option>
+          <option value="EXT2">EXT2</option>
+        </select>
+        <select class="field-input" id="mgmt-shift" onchange="renderMgmtList()" style="font-size:13px;padding:8px">
+          <option value="A">Shift A</option>
+          <option value="B">Shift B</option>
+        </select>
+        <select class="field-input" id="mgmt-time" onchange="renderMgmtList()" style="font-size:13px;padding:8px">
+          <option value="Morning">Morning</option>
+          <option value="Night">Night</option>
+        </select>
+      </div>
+      <div class="mgmt-staff-list" id="mgmt-staff-list"></div>
+    </div>
+  </div>
 </div>
 
-<div id="staff-section"></div>
+<!-- ── PRINT CONTENT (hidden, shown only when printing) ──────── -->
+<div class="print-content" id="print-content"></div>
 
-<div class="submit-bar">
+<!-- ── SUBMIT BAR ─────────────────────────────────────────────── -->
+<div class="submit-bar" id="submit-bar">
   <button class="submit-btn" id="submit-btn" onclick="confirmSubmit()">Submit attendance</button>
 </div>
 
+<!-- ── CONFIRM DIALOG ─────────────────────────────────────────── -->
 <div class="overlay" id="overlay">
   <div class="dialog">
     <h3 id="dialog-title">Submit attendance?</h3>
@@ -166,123 +354,179 @@
 </div>
 
 <script>
-const SHEET_URL = 'https://script.google.com/a/macros/rumbuindustries.com/s/AKfycbyjzFotVwenkcSrg2ESry-oIFf7PLvK_U8Nb-Cxx0WeSNYgJJpuBhwJm4HKm7Q83Dtd/exec';
+// ── CONFIGURATION ─────────────────────────────────────────────────────────────
+const SHEET_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const UNIT_HEAD_PIN = '1234'; // Change this PIN
 
-const roster = {
-  EXT1: {
-    Morning: [
-      {name:'Auwal H. Sulaiman',   code:'V658',  role:'Shift Leader'},
-      {name:'Musa Adam',           code:'RA233', role:'Mixer'},
-      {name:'Yusuf Yakubu',        code:'RB158', role:'Mixer'},
-      {name:'Alanana Silas',       code:'X139',  role:'Inspector'},
-      {name:'Haruna N. Jogana',    code:'V991',  role:'Inspector'},
-      {name:'Abdulwahab Mustapha', code:'RT140', role:'Inspector'},
-      {name:'Anas R. Adam',        code:'Y333',  role:'Inspector'},
-      {name:'Salihu Muhammad',     code:'J168',  role:'Operator'},
-      {name:'Mansur G. Muhammad',  code:'X196',  role:'Operator'},
-      {name:'Shaharani Said',      code:'Y111',  role:'Operator'},
-      {name:'Dennis Harrison',     code:'V676',  role:'Operator'},
-      {name:'Abdulaziz Muhammad',  code:'X315',  role:'Operator'},
-      {name:'Ibrahim Muhammad',    code:'RD389', role:'Operator'},
-      {name:'James Ogar',          code:'X175',  role:'Operator'},
-      {name:'Kamalu Abubakar',     code:'RA463', role:'Operator'},
-      {name:"Ya'u Isiyaku",        code:'RA721', role:'Operator'},
-      {name:'Thormos A. Duniya',   code:'RB055', role:'Operator'},
-      {name:'Yunusa Said',         code:'RA351', role:'Operator'},
-      {name:'Sunusi B. Adam',      code:'RA354', role:'Operator'},
-    ],
-    Night: [
-      {name:'Yahaya Ayegba',       code:'V667',  role:'Shift Leader'},
-      {name:'Kabiru M. Yusuf',     code:'J214',  role:'Operator'},
-      {name:'Abubakar H. Adam',    code:'Z566',  role:'Operator'},
-      {name:'IKyaa Christopher',   code:'X396',  role:'Operator'},
-      {name:'Gambo Ijai',          code:'X113',  role:'Operator'},
-      {name:'Safullahi Saleh',     code:'Y481',  role:'Operator'},
-      {name:'Ismail U. Santuraki', code:'RA339', role:'Operator'},
-      {name:'Samaila Nshinemeng',  code:'RA507', role:'Operator'},
-      {name:'Abdussamad Muhammad', code:'RD024', role:'Operator'},
-      {name:'Kabiru Saad',         code:'RC085', role:'Operator'},
-      {name:'Abubakar Ibrahim',    code:'RC340', role:'Operator'},
-      {name:'Haruna Yusuf',        code:'RC484', role:'Operator'},
-      {name:'Sulaiman Ismail',     code:'RD244', role:'Operator'},
-      {name:'Haruna Umar',         code:'RD252', role:'Operator'},
-      {name:'Nuhu Abdullahi',      code:'RD237', role:'Operator'},
-    ]
+// ── ROSTER DATA ───────────────────────────────────────────────────────────────
+// Structure: roster[unit][shift][time] = array of staff
+let roster = {
+  EXT1:{
+    A:{
+      Morning:[
+        {name:'Auwal H. Sulaiman',   code:'V658',  role:'Shift Leader'},
+        {name:'Musa Adam',           code:'RA233', role:'Mixer'},
+        {name:'Yusuf Yakubu',        code:'RB158', role:'Mixer'},
+        {name:'Alanana Silas',       code:'X139',  role:'Inspector'},
+        {name:'Haruna N. Jogana',    code:'V991',  role:'Inspector'},
+        {name:'Salihu Muhammad',     code:'J168',  role:'Operator'},
+        {name:'Mansur G. Muhammad',  code:'X196',  role:'Operator'},
+        {name:'Shaharani Said',      code:'Y111',  role:'Operator'},
+        {name:'Dennis Harrison',     code:'V676',  role:'Operator'},
+        {name:'Abdulaziz Muhammad',  code:'X315',  role:'Operator'},
+        {name:'Ibrahim Muhammad',    code:'RD389', role:'Operator'},
+        {name:'James Ogar',          code:'X175',  role:'Operator'},
+        {name:'Kamalu Abubakar',     code:'RA463', role:'Operator'},
+        {name:"Ya'u Isiyaku",        code:'RA721', role:'Operator'},
+        {name:'Thormos A. Duniya',   code:'RB055', role:'Operator'},
+        {name:'Yunusa Said',         code:'RA351', role:'Operator'},
+        {name:'Sunusi B. Adam',      code:'RA354', role:'Operator'},
+      ],
+      Night:[
+        {name:'Auwal H. Sulaiman',   code:'V658',  role:'Shift Leader'},
+        {name:'Abdulwahab Mustapha', code:'RT140', role:'Inspector'},
+        {name:'Anas R. Adam',        code:'Y333',  role:'Inspector'},
+        {name:'Kabiru M. Yusuf',     code:'J214',  role:'Operator'},
+        {name:'Abubakar H. Adam',    code:'Z566',  role:'Operator'},
+        {name:'IKyaa Christopher',   code:'X396',  role:'Operator'},
+        {name:'Gambo Ijai',          code:'X113',  role:'Operator'},
+        {name:'Safullahi Saleh',     code:'Y481',  role:'Operator'},
+        {name:'Ismail U. Santuraki', code:'RA339', role:'Operator'},
+        {name:'Samaila Nshinemeng',  code:'RA507', role:'Operator'},
+      ]
+    },
+    B:{
+      Morning:[
+        {name:'Yahaya Ayegba',       code:'V667',  role:'Shift Leader'},
+        {name:'Abdussamad Muhammad', code:'RD024', role:'Operator'},
+        {name:'Kabiru Saad',         code:'RC085', role:'Operator'},
+        {name:'Abubakar Ibrahim',    code:'RC340', role:'Operator'},
+        {name:'Haruna Yusuf',        code:'RC484', role:'Operator'},
+        {name:'Sulaiman Ismail',     code:'RD244', role:'Operator'},
+        {name:'Haruna Umar',         code:'RD252', role:'Operator'},
+        {name:'Nuhu Abdullahi',      code:'RD237', role:'Operator'},
+      ],
+      Night:[
+        {name:'Yahaya Ayegba',       code:'V667',  role:'Shift Leader'},
+        {name:'Abubakar Ibrahim',    code:'RC340', role:'Operator'},
+        {name:'Haruna Yusuf',        code:'RC484', role:'Operator'},
+        {name:'Sulaiman Ismail',     code:'RD244', role:'Operator'},
+        {name:'Haruna Umar',         code:'RD252', role:'Operator'},
+        {name:'Nuhu Abdullahi',      code:'RD237', role:'Operator'},
+      ]
+    }
   },
-  EXT2: {
-    Morning: [
-      {name:'Andrews P. Ali',      code:'V204',  role:'Shift Leader'},
-      {name:'Farouk Umar',         code:'RA409', role:'Mixer'},
-      {name:'Kwandi Wilson',       code:'RC050', role:'Mixer'},
-      {name:'Naziru Isah',         code:'X190',  role:'Inspector'},
-      {name:'Obadiah Barnabas',    code:'V192',  role:'Inspector'},
-      {name:'Abdulaziz Idris',     code:'Y918',  role:'Inspector'},
-      {name:'Abubakar Shaibu',     code:'R45',   role:'Inspector'},
-      {name:'Daniel Danjuma',      code:'J122',  role:'Operator'},
-      {name:'Samuel Bartoo',       code:'V386',  role:'Operator'},
-      {name:'Zekari Akeh',         code:'Z626',  role:'Operator'},
-      {name:'Kazeem Abdulrasheed', code:'Y992',  role:'Operator'},
-      {name:'Elisha Nehemiah',     code:'RB153', role:'Operator'},
-      {name:'Salisu Yuguda',       code:'X121',  role:'Operator'},
-      {name:'Kabiru Musa',         code:'RT146', role:'Operator'},
-      {name:'Dauda Adamu',         code:'RA534', role:'Operator'},
-      {name:'Auwalu Amadu',        code:'X770',  role:'Operator'},
-      {name:'Abdulhamid Hussain',  code:'RA799', role:'Operator'},
-      {name:'Diskudo Tukur',       code:'RA235', role:'Operator'},
-      {name:'Hassan Musa',         code:'RB203', role:'Operator'},
-      {name:'Bashir Hassan',       code:'X236',  role:'Operator'},
-    ],
-    Night: [
-      {name:'Daniel Inuwa',        code:'—',     role:'Shift Leader'},
-      {name:'Shaibu Abdullahi',    code:'RC214', role:'Mixer'},
-      {name:'Abubakar Ahmad',      code:'RD349', role:'Mixer'},
-      {name:'John Landas',         code:'X293',  role:'Inspector'},
-      {name:'Yakubu Yahaya',       code:'RA555', role:'Inspector'},
-      {name:'Daniel Lawan',        code:'RT117', role:'Operator'},
-      {name:'Shaibu Bala',         code:'J105',  role:'Operator'},
-      {name:'Hosa Garba',          code:'J213',  role:'Operator'},
-      {name:'Benard Eimoga',       code:'V380',  role:'Operator'},
-      {name:'Abraham Shiekuma',    code:'RT027', role:'Operator'},
-      {name:'Anthony Philip',      code:'X569',  role:'Operator'},
-      {name:'Suleman Hamza',       code:'RB042', role:'Operator'},
-      {name:'Rabiu Garba',         code:'Z382',  role:'Operator'},
-      {name:'West Shehu',          code:'RA334', role:'Operator'},
-      {name:'Saminu Abdullahi',    code:'RB054', role:'Operator'},
-      {name:'Nura Muazu',          code:'RB084', role:'Operator'},
-      {name:'Yusuf Bom',           code:'RA109', role:'Operator'},
-      {name:'Obadiah Ishaku',      code:'RA101', role:'Operator'},
-    ]
+  EXT2:{
+    A:{
+      Morning:[
+        {name:'Andrews P. Ali',      code:'V204',  role:'Shift Leader'},
+        {name:'Farouk Umar',         code:'RA409', role:'Mixer'},
+        {name:'Kwandi Wilson',       code:'RC050', role:'Mixer'},
+        {name:'Naziru Isah',         code:'X190',  role:'Inspector'},
+        {name:'Obadiah Barnabas',    code:'V192',  role:'Inspector'},
+        {name:'Abdulaziz Idris',     code:'Y918',  role:'Inspector'},
+        {name:'Abubakar Shaibu',     code:'R45',   role:'Inspector'},
+        {name:'Daniel Danjuma',      code:'J122',  role:'Operator'},
+        {name:'Samuel Bartoo',       code:'V386',  role:'Operator'},
+        {name:'Zekari Akeh',         code:'Z626',  role:'Operator'},
+        {name:'Kazeem Abdulrasheed', code:'Y992',  role:'Operator'},
+        {name:'Elisha Nehemiah',     code:'RB153', role:'Operator'},
+        {name:'Salisu Yuguda',       code:'X121',  role:'Operator'},
+        {name:'Kabiru Musa',         code:'RT146', role:'Operator'},
+        {name:'Dauda Adamu',         code:'RA534', role:'Operator'},
+        {name:'Auwalu Amadu',        code:'X770',  role:'Operator'},
+        {name:'Abdulhamid Hussain',  code:'RA799', role:'Operator'},
+        {name:'Diskudo Tukur',       code:'RA235', role:'Operator'},
+        {name:'Hassan Musa',         code:'RB203', role:'Operator'},
+        {name:'Bashir Hassan',       code:'X236',  role:'Operator'},
+      ],
+      Night:[
+        {name:'Andrews P. Ali',      code:'V204',  role:'Shift Leader'},
+        {name:'Shaibu Abdullahi',    code:'RC214', role:'Mixer'},
+        {name:'John Landas',         code:'X293',  role:'Inspector'},
+        {name:'Yakubu Yahaya',       code:'RA555', role:'Inspector'},
+        {name:'Daniel Lawan',        code:'RT117', role:'Operator'},
+        {name:'Shaibu Bala',         code:'J105',  role:'Operator'},
+        {name:'Hosa Garba',          code:'J213',  role:'Operator'},
+        {name:'Benard Eimoga',       code:'V380',  role:'Operator'},
+        {name:'Abraham Shiekuma',    code:'RT027', role:'Operator'},
+        {name:'Anthony Philip',      code:'X569',  role:'Operator'},
+      ]
+    },
+    B:{
+      Morning:[
+        {name:'Daniel Inuwa',        code:'—',     role:'Shift Leader'},
+        {name:'Abubakar Ahmad',      code:'RD349', role:'Mixer'},
+        {name:'Suleman Hamza',       code:'RB042', role:'Operator'},
+        {name:'Rabiu Garba',         code:'Z382',  role:'Operator'},
+        {name:'West Shehu',          code:'RA334', role:'Operator'},
+        {name:'Saminu Abdullahi',    code:'RB054', role:'Operator'},
+        {name:'Nura Muazu',          code:'RB084', role:'Operator'},
+        {name:'Yusuf Bom',           code:'RA109', role:'Operator'},
+        {name:'Obadiah Ishaku',      code:'RA101', role:'Operator'},
+      ],
+      Night:[
+        {name:'Daniel Inuwa',        code:'—',     role:'Shift Leader'},
+        {name:'Abubakar Ahmad',      code:'RD349', role:'Mixer'},
+        {name:'Suleman Hamza',       code:'RB042', role:'Operator'},
+        {name:'Rabiu Garba',         code:'Z382',  role:'Operator'},
+        {name:'West Shehu',          code:'RA334', role:'Operator'},
+        {name:'Saminu Abdullahi',    code:'RB054', role:'Operator'},
+        {name:'Nura Muazu',          code:'RB084', role:'Operator'},
+        {name:'Yusuf Bom',           code:'RA109', role:'Operator'},
+        {name:'Obadiah Ishaku',      code:'RA101', role:'Operator'},
+      ]
+    }
   }
 };
 
 let state = {};
+let currentTab = 'attend';
+let pinUnlocked = false;
 
+// Set today
 const today = new Date();
 document.getElementById('date-sel').value = today.toISOString().split('T')[0];
+document.getElementById('print-date').value = today.toISOString().split('T')[0];
 
-function initials(name) {
-  return name.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  currentTab = tab;
+  ['attend','print','mgmt'].forEach(t => {
+    document.getElementById('panel-'+t) && (document.getElementById('panel-'+t).style.display = 'none');
+    document.getElementById('tab-'+t) && document.getElementById('tab-'+t).classList.remove('active');
+  });
+  const panel = document.getElementById('panel-'+tab);
+  if (panel) { panel.style.display = 'block'; }
+  const tabEl = document.getElementById('tab-'+tab);
+  if (tabEl) tabEl.classList.add('active');
+  document.getElementById('submit-bar').style.display = tab === 'attend' ? 'block' : 'none';
 }
 
-function roleBadgeClass(role) {
-  if (role === 'Shift Leader') return 'leader';
-  if (role === 'Mixer')        return 'mixer';
-  if (role === 'Inspector')    return 'inspector';
-  return '';
+function showMgmt() {
+  showTab('mgmt');
+  document.getElementById('panel-mgmt').style.display = 'block';
+  document.getElementById('panel-mgmt').classList.add('active');
 }
 
+// ── ATTENDANCE ────────────────────────────────────────────────────────────────
 function getKey() {
-  return document.getElementById('unit-sel').value + '_' + document.getElementById('shift-sel').value;
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  return u+'_'+s+'_'+t;
 }
 
 function updateList() {
-  const unit  = document.getElementById('unit-sel').value;
-  const shift = document.getElementById('shift-sel').value;
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  document.getElementById('combo-label').textContent = `${u} · Shift ${s} · ${t}`;
   const key   = getKey();
-  const staff = roster[unit][shift];
+  const staff = roster[u][s][t];
   if (!state[key]) {
     state[key] = {};
-    staff.forEach(s => { state[key][s.code] = null; });
+    staff.forEach(p => { state[key][p.code] = null; });
   }
   renderList(staff, state[key]);
   updateStats(state[key]);
@@ -291,19 +535,32 @@ function updateList() {
 function toggle(code) {
   const key = getKey();
   state[key][code] = (state[key][code] === true) ? false : true;
-  const unit  = document.getElementById('unit-sel').value;
-  const shift = document.getElementById('shift-sel').value;
-  renderList(roster[unit][shift], state[key]);
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  renderList(roster[u][s][t], state[key]);
   updateStats(state[key]);
 }
 
 function markAll(present) {
   const key = getKey();
   Object.keys(state[key]).forEach(code => { state[key][code] = present; });
-  const unit  = document.getElementById('unit-sel').value;
-  const shift = document.getElementById('shift-sel').value;
-  renderList(roster[unit][shift], state[key]);
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  renderList(roster[u][s][t], state[key]);
   updateStats(state[key]);
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+}
+
+function roleBadgeClass(role) {
+  if (role==='Shift Leader') return 'leader';
+  if (role==='Mixer')        return 'mixer';
+  if (role==='Inspector')    return 'inspector';
+  return '';
 }
 
 function renderList(staff, stateMap) {
@@ -316,26 +573,19 @@ function renderList(staff, stateMap) {
   let html = '';
   order.forEach(role => {
     if (!groups[role]) return;
-    const label = role === 'Shift Leader' ? 'Shift Leader' : role + 's';
+    const label = role === 'Shift Leader' ? 'Shift Leader' : role+'s';
     html += `<div class="section-header">${label}</div><div class="staff-list">`;
     groups[role].forEach(s => {
       const val = stateMap[s.code];
-      const cls = val === true ? 'present' : val === false ? 'absent' : '';
-      const toggleLabel = val === true ? 'PRESENT' : val === false ? 'ABSENT' : 'MARK';
-      const badgeCls = roleBadgeClass(s.role);
+      const cls = val===true ? 'present' : val===false ? 'absent' : '';
+      const lbl = val===true ? 'PRESENT' : val===false ? 'ABSENT' : 'MARK';
       html += `<div class="staff-card ${cls}" onclick="toggle('${s.code}')">
         <div class="avatar">${initials(s.name)}</div>
         <div class="staff-info">
           <div class="staff-name">${s.name}</div>
-          <div class="staff-meta">
-            <span>${s.code}</span>
-            <span class="role-badge ${badgeCls}">${s.role}</span>
-          </div>
+          <div class="staff-meta"><span>${s.code}</span><span class="role-badge ${roleBadgeClass(s.role)}">${s.role}</span></div>
         </div>
-        <div class="toggle-wrap">
-          <div class="toggle"></div>
-          <div class="toggle-label">${toggleLabel}</div>
-        </div>
+        <div class="toggle-wrap"><div class="toggle"></div><div class="toggle-label">${lbl}</div></div>
       </div>`;
     });
     html += '</div>';
@@ -344,24 +594,26 @@ function renderList(staff, stateMap) {
 }
 
 function updateStats(stateMap) {
-  const vals    = Object.values(stateMap);
+  const vals = Object.values(stateMap);
   document.getElementById('s-total').textContent   = vals.length;
-  document.getElementById('s-present').textContent = vals.filter(v => v === true).length;
-  document.getElementById('s-absent').textContent  = vals.filter(v => v === false).length;
+  document.getElementById('s-present').textContent = vals.filter(v=>v===true).length;
+  document.getElementById('s-absent').textContent  = vals.filter(v=>v===false).length;
 }
 
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
 function confirmSubmit() {
   const key      = getKey();
   const stateMap = state[key];
   const vals     = Object.values(stateMap);
-  const unmarked = vals.filter(v => v === null).length;
-  const present  = vals.filter(v => v === true).length;
-  const absent   = vals.filter(v => v === false).length;
-  const unit     = document.getElementById('unit-sel').value;
-  const shift    = document.getElementById('shift-sel').value;
-  const date     = document.getElementById('date-sel').value;
+  const unmarked = vals.filter(v=>v===null).length;
+  const present  = vals.filter(v=>v===true).length;
+  const absent   = vals.filter(v=>v===false).length;
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  const d = document.getElementById('date-sel').value;
 
-  if (!date) { showToast('Please select a date before submitting.', 'warning'); return; }
+  if (!d) { showToast('Please select a date before submitting.','warning'); return; }
 
   const cancelBtn  = document.getElementById('btn-cancel');
   const confirmBtn = document.getElementById('btn-confirm');
@@ -374,7 +626,7 @@ function confirmSubmit() {
     cancelBtn.style.display = 'none';
   } else {
     document.getElementById('dialog-title').textContent = 'Submit attendance?';
-    document.getElementById('dialog-body').textContent  = `${unit} ${shift} shift — ${date}\n${present} present, ${absent} absent.\n\nThis will be sent to Google Sheets.`;
+    document.getElementById('dialog-body').textContent  = `${u} · Shift ${s} · ${t} — ${d}\n${present} present, ${absent} absent.\n\nThis will be sent to Google Sheets.`;
     confirmBtn.textContent = 'Submit';
     confirmBtn.onclick     = submitForm;
     cancelBtn.style.display = '';
@@ -388,23 +640,25 @@ function closeDialog() {
 
 function submitForm() {
   closeDialog();
+  const u = document.getElementById('unit-sel').value;
+  const s = document.getElementById('shift-sel').value;
+  const t = document.getElementById('time-sel').value;
+  const d = document.getElementById('date-sel').value;
+  const r = document.getElementById('recorder-sel').value;
   const key      = getKey();
-  const unit     = document.getElementById('unit-sel').value;
-  const shift    = document.getElementById('shift-sel').value;
-  const date     = document.getElementById('date-sel').value;
-  const recorder = document.getElementById('recorder-sel').value;
   const stateMap = state[key];
-  const staff    = roster[unit][shift];
+  const staff    = roster[u][s][t];
 
-  const rows = staff.map(s => ({
-    date:      date,
-    unit:      unit,
-    shift:     shift,
-    recorder:  recorder,
-    code:      s.code,
-    name:      s.name,
-    role:      s.role,
-    status:    stateMap[s.code] === true ? 'Present' : 'Absent',
+  const rows = staff.map(p => ({
+    date:      d,
+    unit:      u,
+    shift:     'Shift '+s,
+    time:      t,
+    recorder:  r,
+    code:      p.code,
+    name:      p.name,
+    role:      p.role,
+    status:    stateMap[p.code]===true ? 'Present' : 'Absent',
     timestamp: new Date().toISOString()
   }));
 
@@ -412,15 +666,15 @@ function submitForm() {
   btn.disabled    = true;
   btn.textContent = 'Submitting…';
 
-  const iframe = document.createElement('iframe');
-  iframe.name  = 'hidden-iframe';
+  const iframe       = document.createElement('iframe');
+  iframe.name        = 'hidden-iframe';
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
 
-  const form   = document.createElement('form');
-  form.method  = 'POST';
-  form.action  = SHEET_URL;
-  form.target  = 'hidden-iframe';
+  const form  = document.createElement('form');
+  form.method = 'POST';
+  form.action = SHEET_URL;
+  form.target = 'hidden-iframe';
 
   const input  = document.createElement('input');
   input.type   = 'hidden';
@@ -430,18 +684,212 @@ function submitForm() {
   document.body.appendChild(form);
 
   iframe.onload = function() {
-    showToast('Attendance submitted successfully.', 'success');
+    showToast('Attendance submitted successfully.','success');
     btn.textContent = 'Submitted ✓';
-    setTimeout(() => {
-      btn.disabled    = false;
-      btn.textContent = 'Submit attendance';
-    }, 3000);
+    setTimeout(() => { btn.disabled=false; btn.textContent='Submit attendance'; }, 3000);
     setTimeout(() => { form.remove(); iframe.remove(); }, 1000);
   };
 
   form.submit();
 }
 
+// ── PRINT / REPORT ────────────────────────────────────────────────────────────
+function generateReport() {
+  const date  = document.getElementById('print-date').value;
+  const unit  = document.getElementById('print-unit').value;
+  const shift = document.getElementById('print-shift').value;
+  const time  = document.getElementById('print-time').value;
+
+  if (!date) { showToast('Please select a date for the report.','warning'); return; }
+
+  // Collect matching roster entries and their state
+  let sections = [];
+  const units  = unit  === 'ALL' ? ['EXT1','EXT2'] : [unit];
+  const shifts = shift === 'ALL' ? ['A','B']        : [shift];
+  const times  = time  === 'ALL' ? ['Morning','Night'] : [time];
+
+  units.forEach(u => {
+    shifts.forEach(s => {
+      times.forEach(t => {
+        const staff = roster[u][s][t];
+        const key   = u+'_'+s+'_'+t;
+        const stateMap = state[key] || {};
+        sections.push({ unit:u, shift:s, time:t, staff, stateMap });
+      });
+    });
+  });
+
+  const fmt = d => {
+    const [y,m,dy] = d.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${dy} ${months[parseInt(m)-1]} ${y}`;
+  };
+
+  let html = `
+  <div style="font-family:Arial,sans-serif;padding:20px;color:#1A1A1A">
+    <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #4B0082;padding-bottom:16px">
+      <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:4px">RUMBU INDUSTRIES GROUP</div>
+      <div style="font-size:20px;font-weight:700;color:#4B0082">Mat Extruder Department</div>
+      <div style="font-size:14px;color:#555;margin-top:4px">Attendance Report — ${fmt(date)}</div>
+      <div style="font-size:12px;color:#888;margin-top:2px">
+        ${unit==='ALL'?'All Units':unit} &nbsp;|&nbsp;
+        ${shift==='ALL'?'All Shifts':'Shift '+shift} &nbsp;|&nbsp;
+        ${time==='ALL'?'Morning and Night':time}
+      </div>
+    </div>`;
+
+  sections.forEach(sec => {
+    const total   = sec.staff.length;
+    const present = sec.staff.filter(p => sec.stateMap[p.code]===true).length;
+    const absent  = sec.staff.filter(p => sec.stateMap[p.code]===false).length;
+    const unmarked= total - present - absent;
+
+    html += `
+    <div style="margin-bottom:24px;page-break-inside:avoid">
+      <div style="background:#4B0082;color:#fff;padding:8px 12px;border-radius:6px 6px 0 0;font-size:13px;font-weight:700">
+        ${sec.unit} &nbsp;·&nbsp; Shift ${sec.shift} &nbsp;·&nbsp; ${sec.time}
+        &nbsp;&nbsp;&nbsp;
+        <span style="font-weight:400;font-size:12px">
+          Total: ${total} &nbsp;|&nbsp; Present: ${present} &nbsp;|&nbsp; Absent: ${absent}${unmarked>0?' &nbsp;|&nbsp; Not recorded: '+unmarked:''}
+        </span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#EDE7F6">
+            <th style="padding:7px 10px;text-align:left;border:1px solid #D1C4E9">Staff Name</th>
+            <th style="padding:7px 10px;text-align:left;border:1px solid #D1C4E9">Code</th>
+            <th style="padding:7px 10px;text-align:left;border:1px solid #D1C4E9">Role</th>
+            <th style="padding:7px 10px;text-align:center;border:1px solid #D1C4E9">Status</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    sec.staff.forEach((p, i) => {
+      const val    = sec.stateMap[p.code];
+      const status = val===true ? 'Present' : val===false ? 'Absent' : '—';
+      const bg     = val===true ? '#E6F4EC' : val===false ? '#FDECEA' : '#fff';
+      const color  = val===true ? '#1B8A4C' : val===false ? '#C0392B' : '#888';
+      const rowBg  = i%2===0 ? '#fff' : '#FAFAFA';
+      html += `
+          <tr style="background:${val!==null?bg:rowBg}">
+            <td style="padding:7px 10px;border:1px solid #E0E0E0">${p.name}</td>
+            <td style="padding:7px 10px;border:1px solid #E0E0E0;color:#888">${p.code}</td>
+            <td style="padding:7px 10px;border:1px solid #E0E0E0;color:#555">${p.role}</td>
+            <td style="padding:7px 10px;border:1px solid #E0E0E0;text-align:center;font-weight:700;color:${color}">${status}</td>
+          </tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    </div>`;
+  });
+
+  html += `
+    <div style="margin-top:30px;border-top:1px solid #DDD;padding-top:12px;font-size:11px;color:#AAA;text-align:center">
+      Generated ${new Date().toLocaleString()} &nbsp;·&nbsp; Rumbu Industries Group — Mat Extruder Department
+    </div>
+  </div>`;
+
+  const printDiv = document.getElementById('print-content');
+  printDiv.innerHTML = html;
+  printDiv.style.display = 'block';
+  window.print();
+  setTimeout(() => { printDiv.style.display = 'none'; }, 1000);
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function checkPin() {
+  const entered = document.getElementById('pin-input').value;
+  if (entered === UNIT_HEAD_PIN) {
+    pinUnlocked = true;
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('mgmt-content').style.display = 'block';
+    renderMgmtList();
+  } else {
+    showToast('Incorrect PIN. Access denied.','error');
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPin();
+});
+
+// ── STAFF MANAGEMENT ──────────────────────────────────────────────────────────
+function addStaff() {
+  const name  = document.getElementById('new-name').value.trim();
+  const code  = document.getElementById('new-code').value.trim();
+  const role  = document.getElementById('new-role').value;
+  const unit  = document.getElementById('new-unit').value;
+  const shift = document.getElementById('new-shift').value;
+  const time  = document.getElementById('new-time').value;
+
+  if (!name || !code) { showToast('Please enter both name and staff code.','warning'); return; }
+
+  // Check duplicate code
+  const existing = roster[unit][shift][time].find(p => p.code === code);
+  if (existing) { showToast('Staff code already exists in this shift.','error'); return; }
+
+  roster[unit][shift][time].push({ name, code, role });
+
+  // Clear state for this combo so the new staff appears
+  const key = unit+'_'+shift+'_'+time;
+  if (state[key]) { state[key][code] = null; }
+
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-code').value = '';
+  showToast(`${name} added to ${unit} Shift ${shift} ${time}.`,'success');
+  renderMgmtList();
+
+  // If currently viewing this shift, refresh
+  if (document.getElementById('unit-sel').value === unit &&
+      document.getElementById('shift-sel').value === shift &&
+      document.getElementById('time-sel').value === time) {
+    updateList();
+  }
+}
+
+function removeStaff(code, unit, shift, time) {
+  const idx = roster[unit][shift][time].findIndex(p => p.code === code);
+  if (idx === -1) return;
+  const name = roster[unit][shift][time][idx].name;
+  roster[unit][shift][time].splice(idx, 1);
+
+  // Remove from state
+  const key = unit+'_'+shift+'_'+time;
+  if (state[key]) delete state[key][code];
+
+  showToast(`${name} removed from roster.`,'success');
+  renderMgmtList();
+
+  if (document.getElementById('unit-sel').value === unit &&
+      document.getElementById('shift-sel').value === shift &&
+      document.getElementById('time-sel').value === time) {
+    updateList();
+  }
+}
+
+function renderMgmtList() {
+  const unit  = document.getElementById('mgmt-unit').value;
+  const shift = document.getElementById('mgmt-shift').value;
+  const time  = document.getElementById('mgmt-time').value;
+  const staff = roster[unit][shift][time];
+  let html = '';
+  staff.forEach(p => {
+    html += `<div class="mgmt-staff-row">
+      <div class="mgmt-staff-info">
+        <div class="mgmt-staff-name">${p.name}</div>
+        <div class="mgmt-staff-sub">${p.code} · ${p.role}</div>
+      </div>
+      <button class="remove-btn" onclick="removeStaff('${p.code}','${unit}','${shift}','${time}')">Remove</button>
+    </div>`;
+  });
+  if (!html) html = `<div style="text-align:center;color:var(--grey-text);padding:20px;font-size:13px">No staff in this shift.</div>`;
+  document.getElementById('mgmt-staff-list').innerHTML = html;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
 function showToast(msg, type) {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
@@ -452,6 +900,8 @@ function showToast(msg, type) {
   setTimeout(() => t.remove(), 3500);
 }
 
+// ── INIT ──────────────────────────────────────────────────────────────────────
+showTab('attend');
 updateList();
 </script>
 </body>
